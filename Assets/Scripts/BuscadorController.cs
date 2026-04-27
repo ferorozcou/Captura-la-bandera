@@ -1,77 +1,65 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class BuscadorController : MonoBehaviour
+public class BuscadorController : BaseNPCController
 {
-    public NavMeshAgent agent;
-
     [Header("Patrullar")]
     public Transform[] patrolPoints;
     public int currentPatrolIndex;
 
-    [Header("Detection")]
-    public Transform player;
-    public float detectionRange = 10f;
-    public float loseRange = 15f;
-
     private StateBuscador currentState;
 
-    void Start()
+    protected override void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
+        base.Start();
         ChangeState(new BuscarState(this));
     }
 
-    void Update()
+    protected override void Think()
     {
-        currentState.Update();
+        // La lógica de transición se mantiene en los estados por ahora
+    }
+
+    protected override void Act()
+    {
+        if (currentState != null)
+            currentState.Update();
     }
 
     public void ChangeState(StateBuscador newState)
     {
         if (currentState != null)
             currentState.Exit();
-
         currentState = newState;
         currentState.Enter();
     }
 
-    public float DistanceToOpponent()
-    {
-        return Vector3.Distance(transform.position, player.position);
-    }
+    // --- FUNCIONES PARA CORREGIR LOS ERRORES DE LA CONSOLA ---
 
-    public bool LineOfSigthToPlayer()
-    {
-        //RaycastHit hit;
-        //Vector3 direction = (player.position - transform.position).normalized;
-        //if (Physics.Raycast(transform.position, direction, out hit, detectionRange))
-        //{
-        //    return hit.transform == player;
-        //}
-        return false;
-    }
 
-    public int LifeRemaining()
-    {
-        // Aquí deberías implementar la lógica para obtener la vida restante del NPC
-        return 100; // Placeholder
-    }
-     public bool FoundFlag()
-    {
-        return false;
-    }
+    // Este corrige el error en ProtegerAbanderadoState y Huir2State
+    public bool TeamFoundFlag() => false;
 
-    public bool TeamFoundFlag()
+    // Este corrige el error en DefenderState
+    public bool FoundFlag()
     {
+        // Si la bandera enemiga está cerca y no ha sido capturada
+        if (enemyFlag != null && Vector3.Distance(transform.position, enemyFlag.transform.position) < 2f)
+        {
+            return true;
+        }
         return false;
     }
 
     public bool FlagStolen()
     {
-        // Aquí deberías implementar la lógica para determinar si el flag del oponente ha sido robado
-        return false; // Placeholder
+        // Si nuestra bandera aliada ha sido capturada por alguien
+        return alliedFlag != null && alliedFlag.isCaptured;
     }
+    public int LifeRemaining() => health;
 
-
+    // Estos ayudan a la compatibilidad con nombres antiguos
+    public float DistanceToOpponent() => base.DistanceToPlayer();
+    public bool LineOfSigthToPlayer() => base.CheckVision();
 }
+
