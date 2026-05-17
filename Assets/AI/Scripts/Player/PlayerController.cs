@@ -48,7 +48,7 @@ public class PlayerController : MonoBehaviour
     private bool isAttacking = false;
     private bool isJumping = false;
     private bool hasFlag = false;        //está llevando la bandera enemiga
-    private bool pickupBlocked = false;  
+    private bool pickupBlocked = false;
 
     private Flag myFlag;         // bandera que debe robar según su equipo
     private Transform myBase;    //base donde debe entregarla
@@ -75,9 +75,7 @@ public class PlayerController : MonoBehaviour
         // teletransporta al jugador a su punto de spawn al inicio
         if (myRespawn != null)
         {
-            cc.enabled = false;
             transform.position = myRespawn.position;
-            cc.enabled = true;
         }
 
         FindFirstObjectByType<HeartsUI>()?.UpdateHearts(currentHearts);
@@ -144,10 +142,13 @@ public class PlayerController : MonoBehaviour
 
     void HandleMovementAndJump()
     {
+        if (!cc.enabled) return;
+
+        bool grounded = cc.isGrounded;
+
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
         Vector3 inputDir = new Vector3(h, 0f, v).normalized;
-        bool grounded = cc.isGrounded;
 
         if (grounded)
         {
@@ -172,6 +173,7 @@ public class PlayerController : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation,
                 Quaternion.LookRotation(moveDir), rotationSpeed * Time.deltaTime);
         }
+
         moveDir.y = verticalVelocity;
         cc.Move(moveDir * speed * Time.deltaTime);
         if (!isAttacking && !isJumping) animator.SetFloat("Speed", inputDir.magnitude);
@@ -232,13 +234,18 @@ public class PlayerController : MonoBehaviour
             cc.enabled = false;
             transform.position = myRespawn != null ? myRespawn.position : Vector3.up; // reaparece en su spawn
             cc.enabled = true;
-            PlayerStats.Instance.Heal(PlayerStats.Instance.MaxHealth); // curacion
-            currentHearts = maxHearts;
+            if (PlayerStats.Instance != null)
+            {
+                PlayerStats.Instance.Heal(PlayerStats.Instance.MaxHealth); // curacion
+                currentHearts = maxHearts;
+            }
             FindFirstObjectByType<HeartsUI>()?.UpdateHearts(currentHearts);
             regenTimer = 0f;
-            isDead = false;
             StartCoroutine(BlockPickup(2f)); //2s de cooldown para recoger bandera tras respawn
         }));
+
+        // isDead = false DESPUÉS del fade-out completo
+        isDead = false;
     }
 
     //muere si cae por debajo del nivel del suelo

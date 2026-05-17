@@ -94,14 +94,19 @@ public class BuscadorController : MonoBehaviour // cerebro del buscador, para ge
         if (!foundFlag) // si no lleva bandera, ejecuta estado activo
             currentState?.Update();
 
-        // animar velocidad y rota hacia donde se mueve
         animator.SetFloat("Speed", agent.velocity.magnitude);
-        if (agent.velocity.magnitude > 0.2f)
+        Vector3 rotDirBus = agent.velocity;
+        if (rotDirBus.magnitude < 0.2f)
         {
-            Vector3 dir = agent.velocity; dir.y = 0f;
-            transform.rotation = Quaternion.Slerp(transform.rotation,
-                Quaternion.LookRotation(dir), Time.deltaTime * 12f);
+            if (player != null && DistanceToPlayer() < visionRange)
+                rotDirBus = player.position - transform.position;
+            else if (flagToSteal != null)
+                rotDirBus = flagToSteal.transform.position - transform.position;
         }
+        rotDirBus.y = 0f;
+        if (rotDirBus.magnitude > 0.1f)
+            transform.rotation = Quaternion.Slerp(transform.rotation,
+                Quaternion.LookRotation(rotDirBus), Time.deltaTime * 12f);
 
         if (!TryAttackFlagCarrier()) // ataca si puede
             TryAttackNearestEnemy();

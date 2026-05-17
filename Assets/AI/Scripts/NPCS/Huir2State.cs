@@ -1,13 +1,10 @@
 using UnityEngine;
 using UnityEngine.AI;
-
 public class Huir2State : StateBuscador
 {
     private float refreshTimer = 0f; // temporizador para recalcular dirección de huida
     private const float REFRESH = 0.3f; // cada 0.3s recalcula hacia dónde huir
-
     public Huir2State(BuscadorController npc) : base(npc) { }
-
     public override void Enter()
     {
         npc.agent.isStopped = false;
@@ -15,7 +12,6 @@ public class Huir2State : StateBuscador
         refreshTimer = 0f;
         Debug.Log(npc.npcName + " ? Huir2State");
     }
-
     public override void Update()
     {
         // reenviar destino de huida cada 0.3s para que siempre huya del jugador actual
@@ -32,14 +28,17 @@ public class Huir2State : StateBuscador
                     npc.agent.SetDestination(hit.position);
             }
         }
-
         if (npc.agent.isStopped) npc.agent.isStopped = false;
 
         // TRANSICIONES 
-        // si jugador ya está lejos, volver a buscar state
+        // si jugador ya está lejos, comprobar si hay aliado con la bandera para escoltarle
         if (npc.DistanceToPlayer() > 3.5f)
-            npc.ChangeState(new BuscarState(npc));
+        {
+            if (npc.IsEnemyFlagCarriedByAlly())
+                npc.ChangeState(new ProtegerAbanderadoState(npc));
+            else
+                npc.ChangeState(new BuscarState(npc));
+        }
     }
-
     public override void Exit() { }
 }

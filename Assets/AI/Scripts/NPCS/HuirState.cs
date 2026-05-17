@@ -32,17 +32,11 @@ public class HuirState : StateDefensor // si la vida está baja, huye
             return;
         }
 
-        // si rival muy cerca de nuestra bandera y lo podemos ver, proteger bandera
-        if (npc.DistanceOpponentFlag() < 3f && npc.LineOfSigthToPlayer())
-        {
-            npc.ChangeState(new ProtegerState(npc));
-            return;
-        }
 
-        // si nuestra vida se ha recuperado, atacar
+        // si vida se ha recuperado, volver a patrullar
         if (npc.LifeRemaining() > 7f)
         {
-            npc.ChangeState(new AtacarState(npc));
+            npc.ChangeState(new PatrullarState(npc));
             return;
         }
     }

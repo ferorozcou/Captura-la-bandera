@@ -79,12 +79,13 @@ public class DefensorController : MonoBehaviour
 
         // anima velocidad y rota hacia la dirección de movimiento
         animator.SetFloat("Speed", agent.velocity.magnitude);
-        if (agent.velocity.magnitude > 0.2f)
-        {
-            Vector3 dir = agent.velocity; dir.y = 0f;
+        Vector3 rotDirDef = agent.velocity;
+        if (rotDirDef.magnitude < 0.2f && player != null)
+            rotDirDef = player.position - transform.position;
+        rotDirDef.y = 0f;
+        if (rotDirDef.magnitude > 0.1f)
             transform.rotation = Quaternion.Slerp(transform.rotation,
-                Quaternion.LookRotation(dir), Time.deltaTime * 12f);
-        }
+                Quaternion.LookRotation(rotDirDef), Time.deltaTime * 12f);
 
         CheckFlagPickup();
         RegenerateLife();

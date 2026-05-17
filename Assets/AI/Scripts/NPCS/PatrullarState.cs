@@ -35,8 +35,14 @@ public class PatrullarState : StateDefensor // defensor recorre waypoints alrede
         if (npc.FlagStolen())
         { npc.ChangeState(new RecuperarState(npc)); return; }
 
-        // si detecta a enemigo en la zona y tiene vida suficiente, atacar
-        if (npc.IsEnemyOfPlayer)
+        // si el enemigo está muy cerca de la bandera y tenemos línea de visión, proteger
+        if (npc.DistanceOpponentFlag() < 3f && npc.LineOfSigthToPlayer())
+        {
+            npc.ChangeState(new ProtegerState(npc));
+            return;
+        }
+            // si detecta a enemigo en la zona y tiene vida suficiente, atacar
+            if (npc.IsEnemyOfPlayer)
         {
             bool detect = npc.LineOfSigthToPlayer() || npc.DistanceToOpponent() < npc.listenRadius;
             bool inZone = IsPlayerInZone(); // si enemigo dentro del area de patrulla
@@ -48,6 +54,7 @@ public class PatrullarState : StateDefensor // defensor recorre waypoints alrede
                 return;
             }
         }
+
 
         // si no hay waypoints, va hacia la bandera
         if (npc.waypoints == null || npc.waypoints.Length == 0)

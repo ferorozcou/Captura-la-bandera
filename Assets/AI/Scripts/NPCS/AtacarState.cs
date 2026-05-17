@@ -25,21 +25,17 @@ public class AtacarState : StateDefensor // defensor persigue y ataca
             return;
         }
 
-        // si, pierde al jugador y está lejos, buscar 
+        // si pierde al jugador y está lejos, volver a patrullar
         if (!npc.LineOfSigthToPlayer() && npc.DistanceToOpponent() > 3f)
         {
-            if (npc.player != null)
-                npc.lastKnownPlayerPosition = npc.player.position;
-            npc.ChangeState(new BuscarJugadorState(npc));
+            npc.ChangeState(new PatrullarState(npc));
             return;
         }
 
-        // si el enemigo se alejó, buscarlo
+        // si el enemigo se alejó del área, volver a patrullar
         if (DistanceFromPatrolCenter() > npc.patrolRadius * 1.5f)
         {
-            if (npc.player != null)
-                npc.lastKnownPlayerPosition = npc.player.position;
-            npc.ChangeState(new BuscarJugadorState(npc));
+            npc.ChangeState(new PatrullarState(npc));
             return;
         }
     }
